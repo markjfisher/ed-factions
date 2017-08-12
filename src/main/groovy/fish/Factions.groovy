@@ -5,6 +5,7 @@ import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.HttpClientBuilder
 
 class Factions {
+	static String dataPath = "data"
 
 	static main(args) {
 		def cli = new CliBuilder(usage: "Factions -p /path/to/factionToSystem.properties -f factionCode\nAdd an entry '<factionCode>.name=Name of Your Faction' to display summary of its lead/deficit to next position")
@@ -58,25 +59,25 @@ class Factions {
 		TreeMap<String, List> allData = [:]
 		systems.each { String s ->
 			def urlSystemName = URLEncoder.encode(s, 'UTF-8')
-			def get = new HttpGet("${factionUrl}?systemName=${urlSystemName}")
+			def get = new HttpGet("${factionUrl}?systemName=${urlSystemName}&showHistory=1")
 			def response = client.execute(get)
 			def reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))
 			def jsonResponse = reader.getText()
-			def todayFile = new File("data/${urlSystemName}.${today}.json")
+			def todayFile = new File("${dataPath}/${urlSystemName}.${today}.json")
 			todayFile.delete()
 			todayFile << jsonResponse
 
 			def systemMap = slurper.parseText(jsonResponse)
 
-			def d1DataFile = new File("data/${urlSystemName}.${d1}.json")
+			def d1DataFile = new File("${dataPath}/${urlSystemName}.${d1}.json")
 			def d1Data = d1DataFile.exists() ? d1DataFile.text : "{}"
 			def d1Map = slurper.parseText(d1Data)
 
-			def d3DataFile = new File("data/${urlSystemName}.${d3}.json")
+			def d3DataFile = new File("${dataPath}/${urlSystemName}.${d3}.json")
 			def d3Data = d3DataFile.exists() ? d3DataFile.text : "{}"
 			def d3Map = slurper.parseText(d3Data)
 
-			def d7DataFile = new File("data/${urlSystemName}.${d7}.json")
+			def d7DataFile = new File("${dataPath}/${urlSystemName}.${d7}.json")
 			def d7Data = d7DataFile.exists() ? d7DataFile.text : "{}"
 			def d7Map = slurper.parseText(d7Data)
 
