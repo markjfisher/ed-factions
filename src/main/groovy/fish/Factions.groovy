@@ -6,6 +6,7 @@ import org.apache.http.impl.client.HttpClientBuilder
 
 class Factions {
 	static String dataPath = "data"
+	static int showHistory = 0
 
 	static main(args) {
 		def cli = new CliBuilder(usage: "Factions -p /path/to/factionToSystem.properties -f factionCode\nAdd an entry '<factionCode>.name=Name of Your Faction' to display summary of its lead/deficit to next position")
@@ -59,7 +60,7 @@ class Factions {
 		TreeMap<String, List> allData = [:]
 		systems.each { String s ->
 			def urlSystemName = URLEncoder.encode(s, 'UTF-8')
-			def get = new HttpGet("${factionUrl}?systemName=${urlSystemName}&showHistory=1")
+			def get = new HttpGet("${factionUrl}?systemName=${urlSystemName}&showHistory=${showHistory}")
 			def response = client.execute(get)
 			def reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))
 			def jsonResponse = reader.getText()
@@ -100,8 +101,12 @@ class Factions {
 
 		allData.each { String systemName, List<Map> data ->
 			println sprintf('%-30s State       Today   D1     D3     D7', systemName)
-			data.each {Map d ->
-				println sprintf('%-30s %-10s %6.2f %6.2f %6.2f %6.2f', d.name, d.state, d.t0Inf, d.t1Inf, d.t3Inf, d.t7Inf)
+			boolean hasShownMainFaction = false
+			data.eachWithIndex { Map d, int i ->
+				if (i < 3 || !hasShownMainFaction) {
+					println sprintf('%-30s %-10s %6.2f %6.2f %6.2f %6.2f', d.name, d.state, d.t0Inf, d.t1Inf, d.t3Inf, d.t7Inf)
+				}
+				if (d.name == factionName) hasShownMainFaction = true
 			}
 			println ""
 		}
