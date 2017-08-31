@@ -23,6 +23,6 @@ task stats(type: JavaExec, dependsOn: classes) {
         args myArgs
     }
 
-    main = 'fish.Factions'
+    main = 'fish.ed.FactionStats'
     classpath configurations.compile, configurations.runtime, sourceSets.main.output
 }
