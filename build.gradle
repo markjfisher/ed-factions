@@ -26,3 +26,16 @@ task stats(type: JavaExec, dependsOn: classes) {
     main = 'fish.ed.FactionStats'
     classpath configurations.compile, configurations.runtime, sourceSets.main.output
 }
+
+task stats2(type: JavaExec, dependsOn: classes) {
+    description = "Gets stats for chosen faction"
+
+    if (project.hasProperty('args')) {
+        // this is just a fancy regex to get all the args from '-Pargs="-a -b -c"' and passing them to the main class
+        def myArgs = (project.args =~ /([^\s"']+)|["']([^'"]*)["']/).collect{it[1] ?: it[2]}
+        args myArgs
+    }
+
+    main = 'fish.ed.FactionStatsOutput'
+    classpath configurations.compile, configurations.runtime, sourceSets.main.output
+}

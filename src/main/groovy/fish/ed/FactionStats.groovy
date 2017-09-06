@@ -9,9 +9,6 @@ class FactionStats {
 	static String dataPath = "data"
 	static int showHistory = 0
 
-	Factions factions
-	SystemsPopulated systemsPopulated
-	EDSM edsm
 	def client = HttpClientBuilder.create().build()
 
 	static main(args) {
@@ -54,28 +51,10 @@ class FactionStats {
 		new FactionStats().doStats(systems, today, factionName, overwrite)
 	}
 
-	def doStats2(String factionName, Date todayDate, boolean overwrite) {
-		println "Loading system and faction data..."
-		factions = new Factions().load()
-		systemsPopulated = new SystemsPopulated().load()
-		edsm = new EDSM()
-
-		def factionId = factions.findFaction(factionName)
-		def systemsWithFaction = systemsPopulated.systemsWithFactionId(factionId)
-
-		systemsWithFaction.each { systemName, systemData ->
-			int systemId = systemData['edsm_id'] as int
-			int systemPopulation = systemData['population'] as int
-			def edsmDataForSystem = edsm.parseData(systemId)
-
-			// now split the faction data into tick days, then average each day out.
-		}
-	}
-
 	String getJsonData(String systemName, String forDate, boolean overwrite) {
-		def jsonFile = new File("${dataPath}/${systemName}.${forDate}.json")
+		def urlSystemName = URLEncoder.encode(systemName, 'UTF-8')
+		def jsonFile = new File("${dataPath}/${urlSystemName}.${forDate}.json")
 		if ((jsonFile.exists() && overwrite) || !jsonFile.exists()) {
-			def urlSystemName = URLEncoder.encode(systemName, 'UTF-8')
 			def get = new HttpGet("${factionUrl}?systemName=${urlSystemName}&showHistory=${showHistory}")
 			def response = client.execute(get)
 			def reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))
@@ -89,8 +68,6 @@ class FactionStats {
 	def doStats(List<String> systems, Date todayDate, String factionName, boolean overwrite) {
 
 		def slurper = new JsonSlurper()
-		// def client = HttpClientBuilder.create().build()
-
 		String today = todayDate.format('yyyyMMdd')
 		String d1 = (todayDate - 1).format('yyyyMMdd')
 		String d3 = (todayDate - 3).format('yyyyMMdd')
@@ -103,6 +80,7 @@ class FactionStats {
 
 			def systemMap = slurper.parseText(jsonResponse)
 
+			def urlSystemName = URLEncoder.encode(s, 'UTF-8')
 			def d1DataFile = new File("${dataPath}/${urlSystemName}.${d1}.json")
 			def d1Data = d1DataFile.exists() ? d1DataFile.text : "{}"
 			def d1Map = slurper.parseText(d1Data)
