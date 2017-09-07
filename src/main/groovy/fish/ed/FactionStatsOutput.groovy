@@ -144,7 +144,7 @@ class FactionStatsOutput {
 		float i3 = (last(aH[fromDateA]) - avg(aH[d7DateA]) - (last(bH[fromDateB]) - avg(bH[d7DateB]))) * 100.0
 
 		String leadTrailText = i0 > 0 ? "leads by" : "trails by"
-		println sprintf("%-30s %-10s %6.2f %6.2f %6.2f %6.2f", systemName, leadTrailText, i0, i1, i2, i3)
+		println sprintf("%-23s %6s %-10s %6.2f %6.2f %6.2f %6.2f", systemName, "[${fromDateA.format(shortFormat)}]", leadTrailText, i0, i1, i2, i3)
 	}
 
 	static float avg(List fs) {

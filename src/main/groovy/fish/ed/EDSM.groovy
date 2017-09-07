@@ -25,7 +25,7 @@ class EDSM {
 		int storedPosition = 0
 		systemData['factions'].each { Map f ->
 			LocalDate latestDate = LocalDate.of(1900, 1, 1)
-			def influencesGroupedByDate = (f.influenceHistory as Map).inject([:]) { Map d, v ->
+			def influencesGroupedByDate = (f.influenceHistory ?: [:] as Map).inject([:]) { Map d, v ->
 				double influence = v.value as double
 				// any faction with near 0.0 value doesn't actually exist
 				if (influence > 0.000001) {
