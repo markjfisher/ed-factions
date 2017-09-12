@@ -10,7 +10,7 @@ class FactionStatsOutput {
 	SystemsPopulated systemsPopulated
 	EDSM edsm
 
-	static final DateTimeFormatter shortFormat = DateTimeFormatter.ofPattern('MMdd')
+	static final DateTimeFormatter shortFormat = DateTimeFormatter.ofPattern('MMM-dd')
 
 	static main(args) {
 		// how do we do just a system?
@@ -20,6 +20,7 @@ class FactionStatsOutput {
 		cli.t(longOpt: 'today', required: false, args: 1, 'what date to use for today (format yyyyMMdd), assumes current date if unset')
 		cli.a(longOpt: 'allFactions', required: false, args: 0, 'When set, show all factions, not just up to main named faction')
 		cli.s(longOpt: 'systemName', required: false, args: 1, 'the system name to display TBD')
+		cli.l(longOpt: 'lastOnly', required: false, args: 1, 'use the last rather than the average value for previous faction data')
 		cli.width = 132
 
 		def options = cli.parse(args)
@@ -88,16 +89,16 @@ class FactionStatsOutput {
 			if (i == 0) {
 				def headingString = sprintf('%-41s %6s %6s %6s %6s',
 					"${systemName} [${NumberFormat.getNumberInstance(Locale.UK).format(population)}]",
-					fromDate.format(shortFormat),
-					d1Date.format(shortFormat),
-					d3Date.format(shortFormat),
-					d7Date.format(shortFormat),
+					fromDate.format(shortFormat).toUpperCase(),
+					d1Date.format(shortFormat).toUpperCase(),
+					d3Date.format(shortFormat).toUpperCase(),
+					d7Date.format(shortFormat).toUpperCase(),
 				)
 				println headingString
 			}
 
 			Map<LocalDate, List> influenceHistory = factionData.influenceHistory
-			float i0 = last(influenceHistory[fromDate] as List) * 100.0
+			float i0 = avg(influenceHistory[fromDate] as List) * 100.0
 			float i1 = avg(influenceHistory[d1Date] as List) * 100.0
 			float i2 = avg(influenceHistory[d3Date] as List) * 100.0
 			float i3 = avg(influenceHistory[d7Date] as List) * 100.0
@@ -138,17 +139,59 @@ class FactionStatsOutput {
 		Map<LocalDate, List> aH = namedFaction.influenceHistory
 		Map<LocalDate, List> bH = neighbourFaction.influenceHistory
 
-		float i0 = (last(aH[fromDateA]) - last(bH[fromDateB])) * 100.0
-		float i1 = (last(aH[fromDateA]) - avg(aH[d1DateA]) - (last(bH[fromDateB]) - avg(bH[d1DateB]))) * 100.0
-		float i2 = (last(aH[fromDateA]) - avg(aH[d3DateA]) - (last(bH[fromDateB]) - avg(bH[d3DateB]))) * 100.0
-		float i3 = (last(aH[fromDateA]) - avg(aH[d7DateA]) - (last(bH[fromDateB]) - avg(bH[d7DateB]))) * 100.0
+		float i0 = (avg(aH[fromDateA]) - avg(bH[fromDateB])) * 100.0
+		float i1 = (avg(aH[fromDateA]) - avg(aH[d1DateA]) - (avg(bH[fromDateB]) - avg(bH[d1DateB]))) * 100.0
+		float i2 = (avg(aH[fromDateA]) - avg(aH[d3DateA]) - (avg(bH[fromDateB]) - avg(bH[d3DateB]))) * 100.0
+		float i3 = (avg(aH[fromDateA]) - avg(aH[d7DateA]) - (avg(bH[fromDateB]) - avg(bH[d7DateB]))) * 100.0
 
 		String leadTrailText = i0 > 0 ? "leads by" : "trails by"
-		println sprintf("%-23s %6s %-10s %6.2f %6.2f %6.2f %6.2f", systemName, "[${fromDateA.format(shortFormat)}]", leadTrailText, i0, i1, i2, i3)
+		println sprintf("%-21s %8s %-10s %6.2f %6.2f %6.2f %6.2f", ss(systemName, 21), "[${fromDateA.format(shortFormat).toUpperCase()}]", leadTrailText, i0, i1, i2, i3)
 	}
 
 	static float avg(List fs) {
-		return fs.sum() / fs.size()
+		if (fs.size() == 1) return fs[0] as float
+
+		float median = calculateMedian(fs)
+		float mode = calculateAvgMode(fs)
+		if ((median - mode) > 0.000001) {
+			println "Warning, median and mode differ for $fs [median: $median, mode: $mode] - using median"
+		}
+
+		return median
+	}
+
+	static List sortFloats(List<Float> l, int precision = 3) {
+		return (l.inject([]) { List vs, v ->
+			// BigDecimal.valueOf(v).setScale(precision, BigDecimal.ROUND_HALF_UP)
+			vs += (v as float)
+			vs
+		} as List).sort()
+	}
+
+	static float calculateMedian(List ls) {
+		if (!ls) return 0.0
+
+		List sorted = sortFloats(ls)
+		int lsize = sorted.size()
+		if (lsize % 2 == 1) {
+			int element = ((lsize - 1) / 2) as int
+			return sorted[element] as float
+		} else {
+			int element = (lsize/2) as int
+			return ((sorted[element - 1] + sorted[element]) / 2.0) as float
+		}
+	}
+
+	static float calculateAvgMode(List ls) {
+		if (!ls) return 0.0
+
+		def m = [:]
+		ls.each {
+			m[it] = m[it] == null ? 1 : m[it] + 1
+		}
+		def keys = m.keySet().sort { -m[it] }
+		List allModes = keys.findAll { m[it] == m[keys[0]] }
+		return allModes.sum() / allModes.size()
 	}
 
 	static float last(List fs) {
