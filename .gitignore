@@ -3,3 +3,6 @@
 gradle/
 build/
 .gradle/
+/classes/
+/out/
+/data-copy/
