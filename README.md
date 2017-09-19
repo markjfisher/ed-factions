@@ -2,27 +2,23 @@ A simple class to display stats for factions.
 
 To run, use
 
-    gradlew -q stats -Pargs="-p factions.properties -f oom -t 20170801"
+    ./gradlew stats -q -Pargs="-f 'The Order of Mobius'"
 
 The options are:
 
-    -p <faction-code-to-system-list-properties-file>
-    -f <faction-code-from-properties-file>
-    -t <date-for-stats> [default is today's date, format YYYYMMDD]
-    
-factions.properties contains lists of systems against codes, of the format:
+    -f <faction-name>  # Display all systems for named faction. Use quotes if the name has spaces in it
+    -t YYYYMMDD        # override the date to display (default to latest in EDSM history)
+    -a                 # show all factions in system
+    -s <system-name>   # not yet implemented, show information only for one system
 
-    oom=Apathaam,Azrael,Cardea,Exioce,Njiri,NLTT 10055
-    oom.name=The Order of Mobius
 
 Example output
 
-    Stats for 20170801
+    Apathaam [3,506,390]                      SEP-18 SEP-17 SEP-15 SEP-11
+    The Order of Mobius            None        57.84  -0.16  14.79  11.60 Boom
+    Apathaam Brothers              Boom        14.98   0.88  -0.60   8.28
+    Apathaam Patron's Principles   None        11.69  -1.31  -7.59  -3.73 Outbreak
     
-    Apathaam                       State       Today   D1     D3     D7
-    The Order of Mobius            Boom        76.32   2.54   7.69  14.49
-    Apathaam Patron's Principles   Civil war    8.59  -1.68  -3.20  -2.50
-    ....
-    
-    Lead/Deficit relative to current          Today   D1     D3     D7
-    Apathaam                       leads by   67.73   4.22  10.89  16.98
+    Leading/Trailing information for The Order of Mobius
+    Apathaam              [SEP-18] leads by    42.86  -1.04  15.38   3.32
+

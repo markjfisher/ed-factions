@@ -20,7 +20,6 @@ class FactionStatsOutput {
 		cli.t(longOpt: 'today', required: false, args: 1, 'what date to use for today (format yyyyMMdd), assumes current date if unset')
 		cli.a(longOpt: 'allFactions', required: false, args: 0, 'When set, show all factions, not just up to main named faction')
 		cli.s(longOpt: 'systemName', required: false, args: 1, 'the system name to display TBD')
-		cli.l(longOpt: 'lastOnly', required: false, args: 1, 'use the last rather than the average value for previous faction data')
 		cli.width = 132
 
 		def options = cli.parse(args)
@@ -160,18 +159,10 @@ class FactionStatsOutput {
 		return median
 	}
 
-	static List sortFloats(List<Float> l, int precision = 3) {
-		return (l.inject([]) { List vs, v ->
-			// BigDecimal.valueOf(v).setScale(precision, BigDecimal.ROUND_HALF_UP)
-			vs += (v as float)
-			vs
-		} as List).sort()
-	}
-
 	static float calculateMedian(List ls) {
 		if (!ls) return 0.0
 
-		List sorted = sortFloats(ls)
+		List sorted = ls.sort()
 		int lsize = sorted.size()
 		if (lsize % 2 == 1) {
 			int element = ((lsize - 1) / 2) as int
@@ -194,10 +185,6 @@ class FactionStatsOutput {
 		return allModes.sum() / allModes.size()
 	}
 
-	static float last(List fs) {
-		return fs[-1]
-	}
-
 	static String ss(String s, int n) {
 		String newS
 		if (s.length() <= n) {
@@ -209,7 +196,7 @@ class FactionStatsOutput {
 	}
 
 
-	LocalDate calculateFromDate(LocalDate todayDate, Map factionData) {
+	static LocalDate calculateFromDate(LocalDate todayDate, Map factionData) {
 		// returns best closest date from faction data
 
 		LocalDate fromDate
