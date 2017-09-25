@@ -19,6 +19,6 @@ class Factions {
 	}
 
 	int findFaction(String factionName) {
-		factionIdToFactionData.find { it.value == factionName }.key
+		factionIdToFactionData?.find { it.value == factionName }?.key ?: -1
 	}
 }

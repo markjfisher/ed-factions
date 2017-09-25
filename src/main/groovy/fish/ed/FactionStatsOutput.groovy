@@ -13,7 +13,6 @@ class FactionStatsOutput {
 	static final DateTimeFormatter shortFormat = DateTimeFormatter.ofPattern('MMM-dd')
 
 	static main(args) {
-		// how do we do just a system?
 		def cli = new CliBuilder(usage: "FactionStats -f factionName")
 		cli.h(longOpt: 'help', required: false, 'show usage information')
 		cli.f(longOpt: 'factionName', required: false, args: 1, 'the faction name in the properties to display')
@@ -51,8 +50,12 @@ class FactionStatsOutput {
 		edsm = new EDSM()
 
 		def factionId = factions.findFaction(factionName)
-		def systemsWithFaction = systemsPopulated.systemsWithFactionId(factionId) as Map<String, Map>
+		if (factionId == -1) {
+			println "No factions found for '$factionName'"
+			return
+		}
 
+		def systemsWithFaction = systemsPopulated.systemsWithFactionId(factionId) as Map<String, Map>
 		Map<String, List<Map>> cachedEDSMDataForSystem = [:]
 		systemsWithFaction.each { String systemName, Map systemData ->
 			int systemId = systemData['edsm_id'] as int
@@ -63,7 +66,7 @@ class FactionStatsOutput {
 		println ""
 		cachedEDSMDataForSystem.each { String systemName, List<Map> edsmDataForSystem ->
 			if (edsmDataForSystem.size() > 0) {
-				displayFactionsInSystem(factionName, todayDate, showAllFactions, systemName, systemsWithFaction[systemName].population as int, edsmDataForSystem)
+				displayFactionsInSystem(factionName, todayDate, showAllFactions, systemName, systemsWithFaction[systemName].population as long, edsmDataForSystem)
 			}
 		}
 
@@ -76,7 +79,7 @@ class FactionStatsOutput {
 
 	}
 
-	def displayFactionsInSystem(String factionName, LocalDate todayDate, boolean showAllFactions, String systemName, int population, List<Map> edsmDataForSystem) {
+	def displayFactionsInSystem(String factionName, LocalDate todayDate, boolean showAllFactions, String systemName, long population, List<Map> edsmDataForSystem) {
 		boolean hasShownMainFaction = false
 		edsmDataForSystem.eachWithIndex { Map factionData, int i ->
 

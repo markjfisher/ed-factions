@@ -25,6 +25,6 @@ class SystemsPopulated {
 	}
 
 	def systemsWithFactionId(int factionId) {
-		systemNameToSystemData.findAll { (it.value['factionIds'] as List).contains(factionId)}
+		systemNameToSystemData?.findAll { (it.value['factionIds'] as List).contains(factionId)} ?: [:]
 	}
 }

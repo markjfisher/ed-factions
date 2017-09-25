@@ -12,7 +12,14 @@ class URLUtils {
 		def response = client.execute(head)
 		// def reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))
 		Header[] headers = response.getHeaders("Last-Modified")
+		if (headers.size() > 0) {
+			def lastModified = headers[0].value
+		}
 		println response
 		headers.toArrayString()
+	}
+
+	static main(args) {
+		getLastModified('https://eddb.io/archive/v5/factions.jsonl')
 	}
 }
