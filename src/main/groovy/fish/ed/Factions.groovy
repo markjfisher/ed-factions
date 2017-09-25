@@ -1,7 +1,9 @@
 package fish.ed
 
 import groovy.json.JsonSlurper
+import groovy.util.logging.Slf4j
 
+@Slf4j
 class Factions {
 	static final String dataURLPath = "https://eddb.io/archive/v5/factions.jsonl"
 
@@ -9,12 +11,17 @@ class Factions {
 	JsonSlurper slurper = new JsonSlurper()
 
 	def load() {
-		def url = dataURLPath.toURL()
-		url.eachLine { String jline ->
+		File jsonFile = EDDB.getJsonFile(dataURLPath, 'factions')
+		if (!jsonFile.exists()) {
+			log.error("Unable to find jsonl file ${jsonFile}")
+			return this
+		}
+
+		jsonFile.eachLine { String jline ->
 			def j = slurper.parseText(jline)
 			factionIdToFactionData[j['id']] = j['name']
 		}
-		println "Loaded ${factionIdToFactionData.size()} factions"
+		log.info "Loaded ${factionIdToFactionData.size()} factions"
 		this
 	}
 

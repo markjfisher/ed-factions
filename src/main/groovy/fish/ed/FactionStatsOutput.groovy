@@ -1,9 +1,12 @@
 package fish.ed
 
+import groovy.util.logging.Slf4j
+
 import java.text.NumberFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
+@Slf4j
 class FactionStatsOutput {
 
 	Factions factions
@@ -44,14 +47,14 @@ class FactionStatsOutput {
 	def showSystemStats(String systemName, LocalDate todayDate) {}
 
 	def showFactionStats(String factionName, LocalDate todayDate, boolean showAllFactions) {
-		println "Loading system and faction data..."
+		log.info "Loading system and faction data..."
 		factions = new Factions().load()
 		systemsPopulated = new SystemsPopulated().load()
 		edsm = new EDSM()
 
 		def factionId = factions.findFaction(factionName)
 		if (factionId == -1) {
-			println "No factions found for '$factionName'"
+			log.info "No factions found for '$factionName'"
 			return
 		}
 

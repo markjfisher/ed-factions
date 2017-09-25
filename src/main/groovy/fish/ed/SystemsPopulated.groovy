@@ -1,7 +1,9 @@
 package fish.ed
 
 import groovy.json.JsonSlurper
+import groovy.util.logging.Slf4j
 
+@Slf4j
 class SystemsPopulated {
 	static final String dataURLPath = "https://eddb.io/archive/v5/systems_populated.jsonl"
 
@@ -9,8 +11,13 @@ class SystemsPopulated {
 	JsonSlurper slurper = new JsonSlurper()
 
 	def load() {
-		def url = dataURLPath.toURL()
-		url.eachLine { String jline ->
+		File jsonFile = EDDB.getJsonFile(dataURLPath, 'systems_populated')
+		if (!jsonFile.exists()) {
+			log.error("Unable to find jsonl file ${jsonFile}")
+			return this
+		}
+
+		jsonFile.eachLine { String jline ->
 			def j = slurper.parseText(jline)
 			List factionIds = j['minor_faction_presences']*.minor_faction_id
 			systemNameToSystemData[j['name']] = [
@@ -20,7 +27,7 @@ class SystemsPopulated {
 				population: j['population']
 			]
 		}
-		println "Loaded ${systemNameToSystemData.size()} systems"
+		log.info "Loaded ${systemNameToSystemData.size()} systems"
 		this
 	}
 
