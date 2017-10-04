@@ -127,6 +127,11 @@ class FactionStatsOutput {
 
 	def displayFactionLeads(String factionName, LocalDate todayDate, String systemName, List<Map> edsmDataForSystem) {
 		Map namedFaction = edsmDataForSystem.find { it.name == factionName }
+
+		if (!namedFaction) {
+			println "${systemName} - no data for ${factionName}"
+			return
+		}
 		int position = namedFaction.position
 		def neighbour = position == 0 ? 1 : position - 1
 		Map neighbourFaction = edsmDataForSystem.find {it.position == neighbour}
@@ -154,6 +159,7 @@ class FactionStatsOutput {
 	}
 
 	static float avg(List fs) {
+		if (!fs) return 0.0
 		if (fs.size() == 1) return fs[0] as float
 
 		float median = calculateMedian(fs)

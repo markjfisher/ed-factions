@@ -13,7 +13,7 @@ import java.time.ZonedDateTime
 class EDSM {
 	public static String factionUrl = 'https://www.edsm.net/api-system-v1/factions'
 	public static final int showHistory = 1
-	public static final int TICK_HOUR = 23
+	public static final int TICK_HOUR = 11
 
 
 	def slurper = new JsonSlurper()
@@ -25,7 +25,7 @@ class EDSM {
 		int storedPosition = 0
 		systemData['factions'].each { Map f ->
 			LocalDate latestDate = LocalDate.of(1900, 1, 1)
-			def influencesGroupedByDate = (f.influenceHistory ?: [:] as Map).inject([:]) { Map d, v ->
+			Map<LocalDate, Object> influencesGroupedByDate = (f.influenceHistory ?: [:] as Map).inject([:]) { Map d, v ->
 				double influence = v.value as double
 				// any faction with near 0.0 value doesn't actually exist
 				if (influence > 0.000001) {
@@ -41,6 +41,12 @@ class EDSM {
 					if (ld > latestDate) latestDate = ld
 				}
 				d
+			}
+			if (!influencesGroupedByDate && f.influence > 0.000001) {
+				// we have no historical data for influences but there is a current influence.
+				// this happens when faction enters a new system. our best guess is yesterday's data
+				latestDate = LocalDate.now().minusDays(1)
+				influencesGroupedByDate.put(latestDate, [f.influence])
 			}
 			// this may store factions where they are no longer active, but the current dates would hold no values.
 			if (influencesGroupedByDate) {
