@@ -32,7 +32,13 @@ class EDSM {
 					Instant influenceInstant = Instant.ofEpochSecond(v.key as int)
 					ZonedDateTime zdt = ZonedDateTime.ofInstant(influenceInstant, ZoneOffset.UTC)
 					// if the TS is between midnight and the tick time, the data is for the day before, o/w it's today.
-					LocalDate ld = LocalDate.from(zdt).minusDays(zdt.getHour() < TICK_HOUR ? 1 : 0)
+					def subtractForTick
+					if (zdt.getHour() >= TICK_HOUR && zdt.getHour() <= 23) {
+						subtractForTick = 0
+					} else {
+						subtractForTick = 1
+					}
+					LocalDate ld = LocalDate.from(zdt).minusDays(subtractForTick)
 
 					// store the influence against the date it applies
 					def influencesForThisDate = d[ld] ?: []

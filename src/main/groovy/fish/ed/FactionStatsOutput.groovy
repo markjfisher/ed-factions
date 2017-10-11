@@ -13,6 +13,7 @@ class FactionStatsOutput {
 	SystemsPopulated systemsPopulated
 	EDSM edsm
 
+	static boolean debugOutput = false
 	static final DateTimeFormatter shortFormat = DateTimeFormatter.ofPattern('MMM-dd')
 
 	static main(args) {
@@ -22,12 +23,17 @@ class FactionStatsOutput {
 		cli.t(longOpt: 'today', required: false, args: 1, 'what date to use for today (format yyyyMMdd), assumes current date if unset')
 		cli.a(longOpt: 'allFactions', required: false, args: 0, 'When set, show all factions, not just up to main named faction')
 		cli.s(longOpt: 'systemName', required: false, args: 1, 'the system name to display TBD')
+		cli.d(longOpt: 'debug', required: false, args: 0, 'enable debug output')
 		cli.width = 132
 
 		def options = cli.parse(args)
 		if (!options || options.h || (!options.f && !options.a)) {
 			if (options?.h) cli.usage()
 			return
+		}
+
+		if (options.d) {
+			debugOutput = true
 		}
 
 		LocalDate today = null
@@ -120,6 +126,15 @@ class FactionStatsOutput {
 			}
 			if (factionData.name == factionName) {
 				hasShownMainFaction = true
+			}
+
+			if (debugOutput) {
+				println "system : ${systemName}"
+				println "faction: ${factionData.name}"
+				println "ih0    : ${influenceHistory[fromDate]}"
+				println "ih1    : ${influenceHistory[d1Date]}"
+				println "ih2    : ${influenceHistory[d3Date]}"
+				println "ih3    : ${influenceHistory[d7Date]}"
 			}
 		}
 		println ""
