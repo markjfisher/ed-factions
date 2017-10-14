@@ -16,6 +16,11 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
 }
 
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.2.1'
+    jarFile = "${rootDir}/wrapper/wrapper.jar"
+}
+
 task stats(type: JavaExec, dependsOn: classes) {
     description = "Gets stats for chosen faction"
 
