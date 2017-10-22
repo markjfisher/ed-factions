@@ -33,3 +33,16 @@ task stats(type: JavaExec, dependsOn: classes) {
     main = 'fish.ed.FactionStatsOutput'
     classpath configurations.compile, configurations.runtime, sourceSets.main.output
 }
+
+task within(type: JavaExec, dependsOn: classes) {
+    description = "Displays systems within given range of given system"
+
+    if (project.hasProperty('args')) {
+        // this is just a fancy regex to get all the args from '-Pargs="-a -b -c"' and passing them to the main class
+        def myArgs = (project.args =~ /([^\s"']+)|["']([^'"]*)["']/).collect{it[1] ?: it[2]}
+        args myArgs
+    }
+
+    main = 'fish.ed.Within'
+    classpath configurations.compile, configurations.runtime, sourceSets.main.output
+}

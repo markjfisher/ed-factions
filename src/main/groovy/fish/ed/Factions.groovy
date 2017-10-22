@@ -19,13 +19,16 @@ class Factions {
 
 		jsonFile.eachLine { String jline ->
 			def j = slurper.parseText(jline)
-			factionIdToFactionData[j['id']] = j['name']
+			factionIdToFactionData[j['id']] = [
+				name: j['name'],
+				isPlayerFaction: j['is_player_faction']
+			]
 		}
 		log.info "Loaded ${factionIdToFactionData.size()} factions"
 		this
 	}
 
 	int findFaction(String factionName) {
-		factionIdToFactionData?.find { it.value == factionName }?.key ?: -1
+		factionIdToFactionData?.find { it.value?.name == factionName }?.key ?: -1
 	}
 }

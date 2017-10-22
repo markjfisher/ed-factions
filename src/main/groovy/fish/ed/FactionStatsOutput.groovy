@@ -27,7 +27,7 @@ class FactionStatsOutput {
 		cli.width = 132
 
 		def options = cli.parse(args)
-		if (!options || options.h || (!options.f && !options.a)) {
+		if (!options || options.h || (!options.f && !options.s)) {
 			if (options?.h) cli.usage()
 			return
 		}
@@ -45,18 +45,40 @@ class FactionStatsOutput {
 		if (options.f) {
 			new FactionStatsOutput().showFactionStats(options.f as String, today, showAllFactions)
 		}
-		if (options.a) {
-			new FactionStatsOutput().showSystemStats(options.a as String, today)
+		if (options.s) {
+			new FactionStatsOutput().showSystemStats(options.s as String, today)
 		}
 	}
 
-	def showSystemStats(String systemName, LocalDate todayDate) {}
-
-	def showFactionStats(String factionName, LocalDate todayDate, boolean showAllFactions) {
+	def loadData() {
 		log.info "Loading system and faction data..."
 		factions = new Factions().load()
 		systemsPopulated = new SystemsPopulated().load()
 		edsm = new EDSM()
+	}
+
+	def showSystemStats(String name, LocalDate todayDate) {
+		loadData()
+
+		Map.Entry sd = systemsPopulated.systemInfoFromName(name)
+		if (!sd) {
+			println "\nNo data for $name"
+			return
+		}
+
+		Map systemData = sd.value as Map
+		int systemId = systemData['edsm_id'] as int
+		def edsmDataForSystem = edsm.parseData(systemId) as List<Map>
+
+		println ""
+		if (edsmDataForSystem.size() > 0) {
+			displayFactionsInSystem("", todayDate, true, name, systemData.population as long, edsmDataForSystem)
+		}
+
+	}
+
+	def showFactionStats(String factionName, LocalDate todayDate, boolean showAllFactions) {
+		loadData()
 
 		def factionId = factions.findFaction(factionName)
 		if (factionId == -1) {
