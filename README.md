@@ -20,6 +20,10 @@ To run, use
     # Windows
     gradlew stats -q -Pargs="-f 'The Order of Mobius'"
 
+Also supports running a single system stats
+
+    # gradlew stats -q -Pargs="-s 'Exioce'"
+
 This will install gradle as required and run the application task to print the statistics out.
 
 The options are:
@@ -29,7 +33,7 @@ The options are:
     -a                 # show all factions in system
                        #   The default without specifying the flag is to show up to the named faction,
                        #   with a minimum of top 3
-    -s <system-name>   # not yet implemented, show information only for one system
+    -s <system-name>   # show information only for one system
     -d                 # additional debug output
     -h                 # help output
 
@@ -46,6 +50,22 @@ Example output
     Leading/Trailing information for The Order of Mobius
     Apathaam              [SEP-18] leads by    42.86  -1.04  15.38   3.32
     # ... other systems
+
+## Showing systems within a range of another system
+
+You can also now find all the systems within given range of a named system with:
+
+    ./gradlew within -q -Pargs="-s 'Exioce' -r 10.0"
+
+    system               range    fc pf
+    -----------------------------------
+    Exioce               0.000     7  1
+    NLTT 7789            8.300     7  0
+    Azrael               8.426     8  1
+
+Optionally add '-m <num>' to set maximum number of factions as an additional filter, e.g. '-m 7' would hide Azrael in the above output.
+
+The column fc is 'Faction count' in the system, 'pf' is the number of player factions in the system.
 
 # Data downloads
 
