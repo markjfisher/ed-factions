@@ -24,10 +24,11 @@ class FactionStatsOutput {
 		cli.a(longOpt: 'allFactions', required: false, args: 0, 'When set, show all factions, not just up to main named faction')
 		cli.s(longOpt: 'systemName', required: false, args: 1, 'the system name to display TBD')
 		cli.d(longOpt: 'debug', required: false, args: 0, 'enable debug output')
+		cli.i(longOpt: 'inFile', required: false, args: 1, 'read faction names from input file')
 		cli.width = 132
 
 		def options = cli.parse(args)
-		if (!options || options.h || (!options.f && !options.s)) {
+		if (!options || options.h || (!options.i && !options.f && !options.s)) {
 			if (options?.h) cli.usage()
 			return
 		}
@@ -47,6 +48,16 @@ class FactionStatsOutput {
 		}
 		if (options.s) {
 			new FactionStatsOutput().showSystemStats(options.s as String, today)
+		}
+		if (options.i) {
+			File inFile = new File(options.i as String)
+			if (!inFile.exists()) {
+				println "Could not find input file $inFile"
+				return
+			}
+			inFile.eachLine { String faction ->
+				new FactionStatsOutput().showFactionStats(faction, today, showAllFactions)
+			}
 		}
 	}
 
