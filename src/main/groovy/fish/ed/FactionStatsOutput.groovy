@@ -24,11 +24,12 @@ class FactionStatsOutput {
 		cli.a(longOpt: 'allFactions', required: false, args: 0, 'When set, show all factions, not just up to main named faction')
 		cli.s(longOpt: 'systemName', required: false, args: 1, 'the system name to display TBD')
 		cli.d(longOpt: 'debug', required: false, args: 0, 'enable debug output')
-		cli.i(longOpt: 'inFile', required: false, args: 1, 'read faction names from input file')
+		cli.i(required: false, args: 1, 'read faction names from input file')
+		cli.j(required: false, args: 1, 'read system names from input file')
 		cli.width = 132
 
 		def options = cli.parse(args)
-		if (!options || options.h || (!options.i && !options.f && !options.s)) {
+		if (!options || options.h || (!options.j && !options.i && !options.f && !options.s)) {
 			if (options?.h) cli.usage()
 			return
 		}
@@ -55,17 +56,35 @@ class FactionStatsOutput {
 				println "Could not find input file $inFile"
 				return
 			}
+			FactionStatsOutput outputter = new FactionStatsOutput()
+			outputter.loadData()
 			inFile.eachLine { String faction ->
-				new FactionStatsOutput().showFactionStats(faction, today, showAllFactions)
+				println "-" * 80
+				outputter.showFactionStats(faction, today, showAllFactions)
+			}
+		}
+		if (options.j) {
+			File inFile = new File(options.j as String)
+			if (!inFile.exists()) {
+				println "Could not find input file $inFile"
+				return
+			}
+			FactionStatsOutput outputter = new FactionStatsOutput()
+			outputter.loadData()
+			inFile.eachLine { String system ->
+				println "-" * 80
+				outputter.showSystemStats(system, today)
 			}
 		}
 	}
 
 	def loadData() {
-		log.info "Loading system and faction data..."
-		factions = new Factions().load()
-		systemsPopulated = new SystemsPopulated().load()
-		edsm = new EDSM()
+		if (!factions) {
+			log.info "Loading system and faction data..."
+			factions = new Factions().load()
+			systemsPopulated = new SystemsPopulated().load()
+			edsm = new EDSM()
+		}
 	}
 
 	def showSystemStats(String name, LocalDate todayDate) {

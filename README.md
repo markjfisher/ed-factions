@@ -24,15 +24,27 @@ Also supports running a single system stats
 
     # gradlew stats -q -Pargs="-s 'Exioce'"
 
-This will install gradle as required and run the application task to print the statistics out.
+To display multiple factions, (or avoid quoting hell where the faction has single quotes in the name), put
+the faction name(s) in a file and run it with:
 
-The options are:
+    # gradlew stats -q -Pargs="-i /path/to/your/faction_list"
+
+Similarly for multiple systems, use:
+
+    # gradlew stats -q -Pargs="-j /path/to/your/system_list"
+
+
+Any of the above will install gradle as required and run the application task to print the statistics out.
+
+The full options are:
 
     -f <faction-name>  # Display all systems for named faction. Use quotes if the name has spaces in it
     -t YYYYMMDD        # override the date to display (default to latest in EDSM history)
     -a                 # show all factions in system
                        #   The default without specifying the flag is to show up to the named faction,
                        #   with a minimum of top 3
+    -i <path/to/file>  # take faction names from <file>, one faction per line - avoids single quote issue of name on command line
+    -j <path/to/file>  # take system names from <file>, one system per line
     -s <system-name>   # show information only for one system
     -d                 # additional debug output
     -h                 # help output
