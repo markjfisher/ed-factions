@@ -104,5 +104,3 @@ are found and EDSM queried for the stats to be output.
 This only affects the -a output as it will show extra factions that should be ignored.
 
 # TODO
-
-- Implement a named system instead of faction.
