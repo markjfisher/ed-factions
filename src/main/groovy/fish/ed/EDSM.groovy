@@ -55,6 +55,9 @@ class EDSM {
 				influencesGroupedByDate.put(latestDate, [f.influence])
 			}
 			// this may store factions where they are no longer active, but the current dates would hold no values.
+			if (f.influence < 0.000001) {
+				f.state = "Gone"
+			}
 			if (influencesGroupedByDate) {
 				factionData += [
 					name            : f.name,

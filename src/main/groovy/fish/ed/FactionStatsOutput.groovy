@@ -137,17 +137,21 @@ class FactionStatsOutput {
 				displayFactionLeads(factionName, todayDate, systemName, edsmDataForSystem)
 			}
 		}
-
 	}
 
 	def displayFactionsInSystem(String factionName, LocalDate todayDate, boolean showAllFactions, String systemName, long population, List<Map> edsmDataForSystem) {
 		boolean hasShownMainFaction = false
-		edsmDataForSystem.eachWithIndex { Map factionData, int i ->
+		LocalDate fromDate = LocalDate.of(1900, 1, 1)
+		edsmDataForSystem.each { Map factionData ->
+            if (factionData.currentDate.isAfter(fromDate)) {
+				fromDate = factionData.currentDate
+			}
+		}
+		LocalDate d1Date = fromDate.minusDays(1)
+		LocalDate d3Date = fromDate.minusDays(3)
+		LocalDate d7Date = fromDate.minusDays(7)
 
-			LocalDate fromDate = calculateFromDate(todayDate, factionData)
-			LocalDate d1Date = calculateFromDate(fromDate.minusDays(1), factionData)
-			LocalDate d3Date = calculateFromDate(fromDate.minusDays(3), factionData)
-			LocalDate d7Date = calculateFromDate(fromDate.minusDays(7), factionData)
+		edsmDataForSystem.eachWithIndex { Map factionData, int i ->
 
 			if (i == 0) {
 				def headingString = sprintf('%-41s %6s %6s %6s %6s',
@@ -181,6 +185,8 @@ class FactionStatsOutput {
 			}
 
 			if (debugOutput) {
+				println "todayDate: ${todayDate}"
+				println "fromDate: ${fromDate}"
 				println "system : ${systemName}"
 				println "faction: ${factionData.name}"
 				println "ih0    : ${influenceHistory[fromDate]}"
