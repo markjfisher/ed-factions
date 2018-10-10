@@ -26,6 +26,8 @@ class FactionStatsOutput {
 		cli.d(longOpt: 'debug', required: false, args: 0, 'enable debug output')
 		cli.i(required: false, args: 1, 'read faction names from input file')
 		cli.j(required: false, args: 1, 'read system names from input file')
+		cli.g(longOpt: 'showGone', required: false, args: 0, 'Show "Gone" systems (retreated factions that are still appearing in history, default: false)')
+		cli.k(longOpt: 'tickHour', required: false, args: 1, 'Set the system tick hour (UTC) as it keeps drifting. Default: 17 (i.e. 5pm UTC)')
 		cli.width = 132
 
 		def options = cli.parse(args)
@@ -43,12 +45,18 @@ class FactionStatsOutput {
 			today = LocalDate.parse(options.t as String, DateTimeFormatter.BASIC_ISO_DATE)
 		}
 		boolean showAllFactions = options.a
+		boolean showGoneFactions = options.g
+
+		int tickHour = 17
+		if (options.k) {
+			tickHour = Integer.parseInt(options.k as String)
+		}
 
 		if (options.f) {
-			new FactionStatsOutput().showFactionStats(options.f as String, today, showAllFactions)
+			new FactionStatsOutput().showFactionStats(options.f as String, today, tickHour, showAllFactions, showGoneFactions)
 		}
 		if (options.s) {
-			new FactionStatsOutput().showSystemStats(options.s as String, today)
+			new FactionStatsOutput().showSystemStats(options.s as String, today, tickHour, showGoneFactions)
 		}
 		if (options.i) {
 			File inFile = new File(options.i as String)
@@ -58,9 +66,10 @@ class FactionStatsOutput {
 			}
 			FactionStatsOutput outputter = new FactionStatsOutput()
 			outputter.loadData()
+			println "Tick Hour: $tickHour\n"
 			inFile.eachLine { String faction ->
-				println "-" * 80
-				outputter.showFactionStats(faction, today, showAllFactions)
+				println "-" * 3
+				outputter.showFactionStats(faction, today, tickHour, showAllFactions, showGoneFactions)
 			}
 		}
 		if (options.j) {
@@ -71,9 +80,10 @@ class FactionStatsOutput {
 			}
 			FactionStatsOutput outputter = new FactionStatsOutput()
 			outputter.loadData()
+			println "\nTick Hour: $tickHour"
 			inFile.eachLine { String system ->
-				println "-" * 80
-				outputter.showSystemStats(system, today)
+				println "-" * 3
+				outputter.showSystemStats(system, today, tickHour, showGoneFactions)
 			}
 		}
 	}
@@ -87,7 +97,7 @@ class FactionStatsOutput {
 		}
 	}
 
-	def showSystemStats(String name, LocalDate todayDate) {
+	def showSystemStats(String name, LocalDate todayDate, int tickHour, boolean showGoneFactions) {
 		loadData()
 
 		Map.Entry sd = systemsPopulated.systemInfoFromName(name)
@@ -98,7 +108,10 @@ class FactionStatsOutput {
 
 		Map systemData = sd.value as Map
 		int systemId = systemData['edsm_id'] as int
-		def edsmDataForSystem = edsm.parseData(systemId) as List<Map>
+		def edsmDataForSystem = edsm.parseData(systemId, tickHour) as List<Map>
+		if (!showGoneFactions) {
+			edsmDataForSystem = removeGoneFactions(edsmDataForSystem)
+		}
 
 		println ""
 		if (edsmDataForSystem.size() > 0) {
@@ -107,7 +120,18 @@ class FactionStatsOutput {
 
 	}
 
-	def showFactionStats(String factionName, LocalDate todayDate, boolean showAllFactions) {
+	List<Map> removeGoneFactions(List<Map> data) {
+		// filter out any where currentState == "Gone"
+		return data.inject([]) { List results, Map factionData ->
+			if (factionData["currentState"] != "Gone") {
+				results += factionData
+			}
+			results
+		}
+
+	}
+
+	def showFactionStats(String factionName, LocalDate todayDate, int tickHour, boolean showAllFactions, boolean showGoneFactions) {
 		loadData()
 
 		def factionId = factions.findFaction(factionName)
@@ -120,7 +144,10 @@ class FactionStatsOutput {
 		Map<String, List<Map>> cachedEDSMDataForSystem = [:]
 		systemsWithFaction.each { String systemName, Map systemData ->
 			int systemId = systemData['edsm_id'] as int
-			def edsmDataForSystem = edsm.parseData(systemId) as List<Map>
+			def edsmDataForSystem = edsm.parseData(systemId, tickHour) as List<Map>
+			if (!showGoneFactions) {
+				edsmDataForSystem = removeGoneFactions(edsmDataForSystem)
+			}
 			cachedEDSMDataForSystem[systemName] = edsmDataForSystem
 		}
 
@@ -152,7 +179,6 @@ class FactionStatsOutput {
 		LocalDate d7Date = fromDate.minusDays(7)
 
 		edsmDataForSystem.eachWithIndex { Map factionData, int i ->
-
 			if (i == 0) {
 				def headingString = sprintf('%-41s %6s %6s %6s %6s',
 					"${systemName} [${NumberFormat.getNumberInstance(Locale.UK).format(population)}]",

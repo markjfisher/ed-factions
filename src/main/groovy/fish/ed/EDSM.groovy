@@ -13,13 +13,11 @@ import java.time.ZonedDateTime
 class EDSM {
 	public static String factionUrl = 'https://www.edsm.net/api-system-v1/factions'
 	public static final int showHistory = 1
-	public static final int TICK_HOUR = 11
-
 
 	def slurper = new JsonSlurper()
 	def client = HttpClientBuilder.create().build()
 
-	List<Map> parseData(int edsmSystemId) {
+	List<Map> parseData(int edsmSystemId, int tickHour) {
 		List<Map> factionData = []
 		Map systemData = getSystemById(edsmSystemId)
 		int storedPosition = 0
@@ -33,7 +31,7 @@ class EDSM {
 					ZonedDateTime zdt = ZonedDateTime.ofInstant(influenceInstant, ZoneOffset.UTC)
 					// if the TS is between midnight and the tick time, the data is for the day before, o/w it's today.
 					def subtractForTick
-					if (zdt.getHour() >= TICK_HOUR && zdt.getHour() <= 23) {
+					if (zdt.getHour() >= tickHour && zdt.getHour() <= 23) {
 						subtractForTick = 0
 					} else {
 						subtractForTick = 1
