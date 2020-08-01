@@ -1,5 +1,6 @@
 package fish.ed
 
+import groovy.cli.commons.CliBuilder
 import groovy.util.logging.Slf4j
 
 @Slf4j

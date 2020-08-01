@@ -5,7 +5,7 @@ import groovy.util.logging.Slf4j
 
 @Slf4j
 class Factions {
-	static final String dataURLPath = "https://eddb.io/archive/v5/factions.jsonl"
+	static final String dataURLPath = "https://eddb.io/archive/v6/factions.jsonl"
 
 	Map factionIdToFactionData = [:]
 	JsonSlurper slurper = new JsonSlurper()

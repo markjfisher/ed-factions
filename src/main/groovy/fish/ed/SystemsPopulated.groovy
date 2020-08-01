@@ -7,7 +7,7 @@ import java.util.Map.Entry
 
 @Slf4j
 class SystemsPopulated {
-	static final String dataURLPath = "https://eddb.io/archive/v5/systems_populated.jsonl"
+	static final String dataURLPath = "https://eddb.io/archive/v6/systems_populated.jsonl"
 
 	Map systemNameToSystemData = new TreeMap()
 	JsonSlurper slurper = new JsonSlurper()
